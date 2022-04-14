@@ -1,0 +1,390 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "description": "A Social Network made with Node JS",
+    "version": "1.0.0",
+    "title": "NodeSocialNetwork"
+  },
+  "host": "localhost:3005",
+  "basePath": "/api",
+  "tags": [
+    {
+      "name": "Users",
+      "description": "User operations"
+    },
+    {
+      "name": "Auth",
+      "description": "User authentication operations"
+    }
+  ],
+  "schemes": [
+    "http",
+    "https"
+  ],
+  "paths": {
+    "/user": {
+      "get": {
+        "tags": [
+          "Users"
+        ],
+        "summary": "Get users",
+        "description": "Lists all users registered in the application",
+        "operationId": "listUser",
+        "produces": [
+          "application/json"
+        ],
+        "responses": {
+          "default": {
+            "description": "Successful operation"
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Users"
+        ],
+        "summary": "Create user",
+        "description": "Creates a new user in the application",
+        "operationId": "createUser",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "in": "body",
+            "name": "body",
+            "description": "Created user object",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/CreateUserDTO"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Successful operation"
+          }
+        }
+      }
+    },
+    "/user/{id}": {
+      "get": {
+        "tags": [
+          "Users"
+        ],
+        "summary": "Get user by ID",
+        "description": "",
+        "operationId": "getUserByID",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "Search an user by ID",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successful operation",
+            "schema": {
+              "$ref": "#/definitions/User"
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "Users"
+        ],
+        "summary": "Update user by ID",
+        "description": "",
+        "operationId": "updateUserByID",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "Update an user by ID",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "in": "body",
+            "name": "body",
+            "description": "New fields for user updation",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/CreateUserDTO"
+            }
+          }          
+        ],
+        "responses": {
+          "200": {
+            "description": "successful operation",
+            "schema": {
+              "$ref": "#/definitions/User"
+            }
+          }
+        }
+      },      
+      "delete": {
+        "tags": [
+          "Users"
+        ],
+        "summary": "Delete user",
+        "description": "Delete an user by ID",
+        "operationId": "deleteUser",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "The user ID that needs to be deleted",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "400": {
+            "description": "Invalid user ID supplied"
+          },
+          "404": {
+            "description": "User not found"
+          }
+        }
+      }
+    },
+    "/auth/login": {
+      "post": {
+        "tags": [
+          "Auth"
+        ],
+        "summary": "Login user",
+        "description": "Logs an user in the application",
+        "operationId": "authUser",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "in": "body",
+            "name": "body",
+            "description": "User to log-in",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/LoginUserDTO"
+            }
+          }
+        ],        
+        "responses": {
+          "default": {
+            "description": "Successful operation"
+          },
+          "500": {
+            "description": "Something happened"
+          }
+        }
+      }     
+    },
+    "/user/follow/{id}": {
+      "post": {
+        "tags": [
+          "Users"
+        ],
+        "summary": "Follow user",
+        "description": "Vinculates a logged in user in other",
+        "operationId": "followUser",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "New user ID to follow",
+            "required": true,
+            "type": "string"
+          }
+        ],        
+        "responses": {
+          "201": {
+            "description": "successful operation",
+            "schema": {
+              "$ref": "#/definitions/Followers"
+            }
+          }
+        }
+      }
+    },
+    "user/{id}/followers": {
+      "get": {
+        "tags": [
+          "Users"
+        ],
+        "summary": "Get user followers",
+        "description": "",
+        "operationId": "getFollowers",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "ID to search followers",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successful operation",
+            "schema": {
+              "$ref": "#/definitions/Followers"
+            }
+          }
+        }
+      }
+    },
+    "/post": {
+      "get": {
+        "tags": [
+          "Posts"
+        ],
+        "summary": "Get posts",
+        "description": "Lists all posts",
+        "operationId": "listPosts",
+        "produces": [
+          "application/json"
+        ],
+        "responses": {
+          "default": {
+            "description": "Successful operation"
+          }
+        }
+      }
+    },
+    "/post/{id}": {
+      "get": {
+        "tags": [
+          "Posts"
+        ],
+        "summary": "Get post by ID",
+        "description": "",
+        "operationId": "getPostByID",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "Search a post by its ID",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successful operation"
+          }
+        }
+      }   
+    } 
+  },
+  "securityDefinitions": {
+    "Bearer": {
+      "type": "apiKey",
+      "name": "authorization",
+      "in": "header",
+      "description": "Enter your bearer token in the format **Bearer &lt;token>**"
+    }
+  },
+  "security": [
+    {
+      "Bearer": []
+    }
+  ],
+  "definitions": {
+    "User": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "username": {
+          "type": "string"
+        },
+        "password": {
+          "type": "string"
+        }
+      }
+    },
+    "LoginUserDTO": {
+      "type": "object",
+      "properties": {
+        "username": {
+          "type": "string"
+        },
+        "password": {
+          "type": "string"
+        }
+      }
+    },
+    "CreateUserDTO": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "username": {
+          "type": "string"
+        },
+        "password": {
+          "type": "string"
+        }
+      }
+    },
+    "Followers": {
+      "type": "object",
+      "properties": {
+        "user_from": {
+          "type": "string"
+        },
+        "user_to": {
+          "type": "string"
+        }
+      }
+    },
+    "ApiResponse": {
+      "type": "object",
+      "properties": {
+        "error": {
+          "type": "boolean"
+        },
+        "status": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "body": {
+          "type": "object"
+        }
+      }
+    }
+  },
+  "externalDocs": {
+    "description": "Get more info about me",
+    "url": "https://github.com/duquejo01"
+  }
+}
