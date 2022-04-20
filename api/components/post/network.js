@@ -1,6 +1,7 @@
 const express = require('express');
 
 const response = require('../../../network/response');
+const secure = require('../user/secure');
 const Controller = require('./index');
 
 const router = express.Router();
@@ -39,7 +40,7 @@ const list = async ( req, res, next ) => {
  */
  const upsert = async ( req, res, next ) => {
     try {
-        const newPost = await Controller.upsert( req.body );
+        const newPost = await Controller.upsert( req.user.id, req.body );
         response.success( req, res, newPost, 200 );
     } catch (error) {    
         next( error );
@@ -79,8 +80,8 @@ const remove = async ( req, res, next ) => {
  */
 router.get('/', list );
 router.get('/:id', get );
-router.post('/', upsert );
-router.delete('/:id', remove );
-router.put( '/:id', update );
+router.post('/', secure('logged'), upsert );
+router.delete('/:id', secure('logged'), remove );
+router.put( '/:id', secure('logged'), update );
 
 module.exports = router;

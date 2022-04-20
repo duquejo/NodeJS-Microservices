@@ -1,8 +1,6 @@
 /**
  * Users Middleware
  */
-
-const response = require('../../../network/response');
 const auth = require('../../../auth/');
 
 module.exports = checkAuth = ( action ) => {
@@ -12,6 +10,7 @@ module.exports = checkAuth = ( action ) => {
                 auth.check.own( req, req.params.id );
                 next();
                 break;
+            case 'logged':
             case 'follow':
                 auth.check.logged( req );
                 next();

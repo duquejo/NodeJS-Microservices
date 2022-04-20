@@ -89,7 +89,7 @@ const upsert = ( table, data ) => new Promise( async ( resolve, reject ) => {
     const exists = await get( table, data );
     if( exists.length ) {
         return reject({ 
-            message: 'The resource that are you trying to insert already exists.', 
+            message: 'The resource which you are trying to insert already exists.', 
             statusCode: 409,
         });
     }
@@ -117,7 +117,7 @@ const upsert = ( table, data ) => new Promise( async ( resolve, reject ) => {
      const exists = await get( table, { id, ...data } );
      if( ! exists.length ) {
         return reject({ 
-            message: 'User not exists', 
+            message: 'The resource doesn\'t exists', 
             statusCode: 404,
         });
     }
@@ -142,14 +142,11 @@ const upsert = ( table, data ) => new Promise( async ( resolve, reject ) => {
  */
 const query = ( table, data, join ) => new Promise( async ( resolve, reject ) => {
 
-    // { user: 'user_to' }
-
     let joinQuery = '';
     if( join ) {
         joinQuery = `JOIN ${ join.table } ON ${ table }.${ join.on } = ${ join.table }.${ join.tableWhere }`;
     }
     
-
     const query = `SELECT * FROM ${ table } ${ joinQuery } WHERE ?`;
     connection.query( query, data, ( error, result ) => {
         if( error ) {
@@ -159,10 +156,42 @@ const query = ( table, data, join ) => new Promise( async ( resolve, reject ) =>
     });
 });
 
+/**
+ * Remove
+ */
+const remove = ( table, id ) => new Promise( async ( resolve, reject ) => {
+
+    /**
+     * Search by ID first.
+     */
+     const exists = await get( table, { id } );
+     if( exists.length == 0 ) {
+         return reject({ 
+             message: 'The resource which you are trying to remove doesn\'t exists.', 
+             statusCode: 409,
+         });
+     }
+
+     
+     const query = `DELETE FROM ${ table } WHERE id = ?`;
+     console.log( {table, id, exists, query} );
+     connection.query( query, [ id ], ( error, result ) => {
+         if ( error ) {
+             return reject( error );
+         }
+         console.log( error, result );
+         resolve({
+             message: result,
+             statusCode: 200
+         });
+     });
+});
+
 module.exports = {
     list,
     get,
     upsert,
     update,
-    query
+    query,
+    remove
 };
