@@ -224,7 +224,7 @@
         }
       }
     },
-    "user/{id}/followers": {
+    "/user/{id}/followers": {
       "get": {
         "tags": [
           "Users"
@@ -270,7 +270,34 @@
             "description": "Successful operation"
           }
         }
-      }
+      },
+      "post": {
+        "tags": [
+          "Posts"
+        ],
+        "summary": "Create new post",
+        "description": "Creates a new post in the application",
+        "operationId": "createPost",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "in": "body",
+            "name": "body",
+            "description": "Created post object",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/CreatePostDTO"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Successful operation"
+          }
+        }
+      }      
     },
     "/post/{id}": {
       "get": {
@@ -297,7 +324,72 @@
             "description": "successful operation"
           }
         }
-      }   
+      },
+      "put": {
+        "tags": [
+          "Posts"
+        ],
+        "summary": "Update post by ID",
+        "description": "",
+        "operationId": "updatePostByID",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "Update a post by ID",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "in": "body",
+            "name": "body",
+            "description": "New fields for post updation",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/CreatePostDTO"
+            }
+          }          
+        ],
+        "responses": {
+          "200": {
+            "description": "successful operation",
+            "schema": {
+              "$ref": "#/definitions/Post"
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Posts"
+        ],
+        "summary": "Delete post",
+        "description": "Delete a post by ID",
+        "operationId": "deletePost",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "The post ID that needs to be deleted",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "400": {
+            "description": "Invalid supplied post ID"
+          },
+          "404": {
+            "description": "Post not found"
+          }
+        }
+      }      
     } 
   },
   "securityDefinitions": {
@@ -331,6 +423,23 @@
         }
       }
     },
+    "Post": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "title": {
+          "type": "string"
+        },
+        "content": {
+          "type": "string"
+        },
+        "user": {
+          "type": "string"
+        }
+      }
+    },
     "LoginUserDTO": {
       "type": "object",
       "properties": {
@@ -352,6 +461,17 @@
           "type": "string"
         },
         "password": {
+          "type": "string"
+        }
+      }
+    },
+    "CreatePostDTO": {
+      "type": "object",
+      "properties": {
+        "title": {
+          "type": "string"
+        },
+        "content": {
           "type": "string"
         }
       }
