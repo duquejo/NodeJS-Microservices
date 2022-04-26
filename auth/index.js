@@ -21,8 +21,8 @@ const check = {
 const verify = ( token ) => {
     try {
         return JWT.verify( token, secret )
-    } catch (error) {
-        throw error( error.message, 403 );
+    } catch (err) {
+        throw error( err, 403 );
     }    
 };
 

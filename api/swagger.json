@@ -15,7 +15,11 @@
     {
       "name": "Auth",
       "description": "User authentication operations"
-    }
+    },
+    {
+      "name": "Posts",
+      "description": "Posts operations"
+    }    
   ],
   "schemes": [
     "http",
@@ -390,7 +394,7 @@
           }
         }
       }      
-    } 
+    }   
   },
   "securityDefinitions": {
     "Bearer": {

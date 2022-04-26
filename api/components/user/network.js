@@ -27,7 +27,7 @@ router.use( express.json() );
  */
 const get = async ( req, res, next ) => {
     try {
-        const user = await Controller.get( req.params );
+        const user = await Controller.get( req.params.id );
         response.success( req, res, user, 200 );
     } catch (error) {
         next(error);

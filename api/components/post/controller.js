@@ -15,9 +15,9 @@ module.exports = ( injectedStore ) => {
             return store.list( POST_TABLE );
         },
         get: ( id ) => {
-            return store.get( POST_TABLE, id );
+            return store.getById( POST_TABLE, id );
         },
-        upsert: async ( userId, body ) => {
+        upsert: async ( body ) => {
 
             const post = {
                 title: body.title
@@ -27,8 +27,8 @@ module.exports = ( injectedStore ) => {
                 post.content = body.content;
             }
 
-            if( userId ) {
-                post.user = userId;
+            if( body.user ) {
+                post.user = body.user;
             }
 
             if( body.id ) {
@@ -37,7 +37,7 @@ module.exports = ( injectedStore ) => {
                 post.id = nanoId.nanoid();
             }
 
-            return store.upsert( POST_TABLE, post );
+            return store.upsertPost( POST_TABLE, post );
         },
         remove: ( id ) => store.remove( POST_TABLE, id ),
         update: ( id, body ) => store.update( POST_TABLE, id, body )

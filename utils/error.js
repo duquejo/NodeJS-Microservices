@@ -1,4 +1,4 @@
-const err = ( message, code ) => {
+module.exports = err = ( message, code ) => {
     let e = new Error( message );
 
     if( code ) {
@@ -6,6 +6,4 @@ const err = ( message, code ) => {
     }
 
     return e;
-}
-
-module.exports = err;
+};

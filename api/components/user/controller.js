@@ -1,4 +1,5 @@
 const nanoId = require('nanoid');
+const error = require('../../../utils/error');
 const auth = require('../auth');
 
 const USER_TABLE = 'user';
@@ -16,7 +17,7 @@ module.exports = ( injectedStore ) => {
             return store.list( USER_TABLE );
         },
         get: ( id ) => {
-            return store.get( USER_TABLE, id );
+            return store.getById( USER_TABLE, id );
         },
         upsert: async ( body ) => {
 
@@ -42,19 +43,28 @@ module.exports = ( injectedStore ) => {
                     password: body.password
                 });
             }
-
-            return store.upsert( USER_TABLE, user );
+            return store.upsertUser( USER_TABLE, user );
         },
-        remove: ( id ) => {
+        remove: async ( id ) => {
+            await auth.remove( id ); // Remove auth counterpart
             return store.remove( USER_TABLE, id );
         },
         update: async ( id, body ) => {
 
-            const user = {
-                id,
-                name: body.name,
-                username: body.username,
-            };
+            
+            if( ! id ) {
+                throw error( 'The ID is required.');
+            }
+            
+            const user = { id };
+
+            if( body.name ) {
+                user.name = body.name;
+            }
+
+            if( body.username ) {
+                user.username = body.username;
+            }
 
             if( body.password || body.username ) {
 
@@ -62,30 +72,33 @@ module.exports = ( injectedStore ) => {
                  * Login Update.
                  */
                 await auth.update({
-                    id: user.id,
+                    id,
                     username: user.username,
                     password: body.password
                 });
             }
 
-            return store.update( USER_TABLE, id, body );
+            return store.update( USER_TABLE, id, user );
         },
         follow: ( from, to ) => {
-            return store.upsert( `${ USER_TABLE }_follow`, {
+            return store.upsertFollower( `${ USER_TABLE }_follow`, {
                 user_from: from,
                 user_to: to
             });
         },
         followers: ( id ) => {
-
             const join = {
-                table: 'user',
+                table: USER_TABLE,
                 on: 'user_to',
                 tableWhere: 'id' 
             };
-            
             const query = { user_from: id };
             return store.query( `${ USER_TABLE }_follow`, query, join );
         },
     };
 };
+
+
+/**
+ * @TODO Continuar implementación a remoteMySQL
+ */
