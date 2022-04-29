@@ -4,9 +4,6 @@ const config = require('../config');
 
 const client = redis.createClient({
     host: config.redis.host,
-    // socket: {
-    //     port: config.redis.port
-    // },
     port: config.redis.port,
     password: config.redis.password,
     legacyMode: true

@@ -23,18 +23,18 @@ const get = async ( req, res, next ) => {
         if( !!req.params.id ) {
             switch( req.params.table ) {
                 case 'auth':
-                    data = await Store.getByUsername( req.params.table, req.params.id );
+                    data = await Store.get( req.params.table, req.params.id, 'username' );
                     break;
                 default:
-                    data = await Store.getById( req.params.table, req.params.id );
+                    data = await Store.get( req.params.table, req.params.id, 'id' );
                     break;
             }
         } else if( !!req.params.username ) {
-            data = await Store.getByUsername( req.params.table, req.params.username );
+            data = await Store.get( req.params.table, req.params.username, 'username' );
         } else if( !!req.params.title ) {
-            data = await Store.getByTitle( req.params.table, req.params.title );
+            data = await Store.get( req.params.table, req.params.title, 'title' );
         } else if ( !!req.params.user_to ) {
-            data = await Store.getByUserTo( req.params.table, req.params.user_to );
+            data = await Store.get( req.params.table, req.params.user_to, 'user_to' );
         } else {
             throw error( 'Endpoint not allowed', 500 );
         }
@@ -100,13 +100,14 @@ const remove = async ( req, res, next ) => {
 /**
  * Routes
  */
+router.post('/:table/follow/:id', upsert );
+router.get('/:table/:id/followers', query );
+
+router.get('/:table/:id/:criteria', get );
+
 router.get('/:table', list );
-router.get('/:table/:id', get );
 router.post('/:table', upsert );
 router.put('/:table/:id', update );
 router.delete('/:table/:id', remove );
-
-router.post('/:table/follow/:id', upsert );
-router.get('/:table/:id/followers', query );
 
 module.exports = router;

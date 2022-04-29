@@ -15,7 +15,7 @@ module.exports = ( injectedStore ) => {
             return store.list( POST_TABLE );
         },
         get: ( id ) => {
-            return store.getById( POST_TABLE, id );
+            return store.get( POST_TABLE, id, 'id' );
         },
         upsert: async ( body ) => {
 

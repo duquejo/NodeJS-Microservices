@@ -49,61 +49,33 @@ const list = ( table ) => new Promise( ( resolve, reject ) =>
 );
 
 /**
- * Get by ID
+ * Get
  */
-const getById = ( table, id ) => new Promise( ( resolve, reject ) => {
-    const query = `SELECT * FROM ${ table } WHERE id = '${id }'`;
-    connection.query( query, id, ( error, data ) => {
+const get = ( table, search, criteria ) => new Promise( ( resolve, reject ) => {
+
+    const validCriteria = ['username', 'id', 'title', 'user_to'];
+
+    if( ! validCriteria.includes( criteria ) ) {
+        return reject({ 
+            message: 'Not valid process, try again.', 
+            statusCode: 400,
+        });
+    }
+
+    const query = `SELECT * FROM ${ table } WHERE ${ criteria } = '${search }'`;
+    connection.query( query, search, ( error, data ) => {
         if ( error ) {
             return reject( error );
         }
         resolve( data[0] );  
     });
 });
-
-/**
- * Get by Username
- */
-const getByUsername = ( table, username ) => new Promise( ( resolve, reject ) => {
-    const query = `SELECT * FROM ${ table } WHERE username = '${ username }'`;
-    connection.query( query, username, ( error, data ) => {
-        if ( error ) {
-            return reject( error );
-        }
-        resolve( data[0] );  
-    });
-});
-
-/**
- * Get by Title
- */
-const getByTitle = ( table, title ) => new Promise( ( resolve, reject ) =>
-    connection.query( `SELECT * FROM ${ table } WHERE title = '${title }'`, title, ( error, data ) => {
-        if ( error ) {
-            return reject( error );
-        }
-        resolve( data[0] );
-    })
-);
-
-/**
- * Get by user_to
- */
-const getByUserTo = ( table, user_to ) => new Promise( ( resolve, reject ) =>
-    connection.query( `SELECT * FROM ${ table } WHERE user_to = '${user_to }'`, user_to, ( error, data ) => {
-        if ( error ) {
-            return reject( error );
-        }
-        resolve( data[0] );  
-    })
-);
-
 
 /**
  * Upsert User/Auth
  */
 const upsertUser = ( table, data ) => new Promise( async ( resolve, reject ) => {
-    const exists = await getByUsername( table, data.username );
+    const exists = await get( table, data.username, 'username' );
     if( exists ) {
         return reject({ 
             message: 'This user already exists.', 
@@ -125,7 +97,7 @@ const upsertUser = ( table, data ) => new Promise( async ( resolve, reject ) => 
  * Upsert Post
  */
 const upsertPost = ( table, data ) => new Promise( async ( resolve, reject ) => {
-    const exists = await getByTitle( table, data.title );
+    const exists = await get( table, data.title, 'title' );
     if( exists ) {
         return reject({ 
             message: 'This title actually exists, try another.', 
@@ -155,7 +127,7 @@ const upsertFollower = ( table, data ) => new Promise( async ( resolve, reject )
         });
     }
 
-    const exists = await getById( USER_TABLE, data.user_to );
+    const exists = await get( USER_TABLE, data.user_to, 'id' );
     if( ! exists ) {
         return reject({ 
             message: 'Inexistent user to follow, try again.', 
@@ -163,7 +135,7 @@ const upsertFollower = ( table, data ) => new Promise( async ( resolve, reject )
         });        
     }
 
-    const isVinculated = await getByUserTo( table, data.user_to );
+    const isVinculated = await get( table, data.user_to, 'user_to' );
     if( isVinculated ) {
         return reject({ 
             message: 'This new follower is actually vinculated to user', 
@@ -188,7 +160,7 @@ const update = ( table, id, data ) => new Promise( async ( resolve, reject ) => 
     /**
      * Search by id first.
      */
-     const exists = await getById( table, id );
+     const exists = await get( table, id, 'id' );
      if( ! exists ) {
         return reject({ 
             message: 'The resource doesn\'t exists', 
@@ -211,8 +183,7 @@ const query = ( table, data, join ) => new Promise( async ( resolve, reject ) =>
     if( join ) {
         joinQuery = `JOIN ${ join.table } ON ${ table }.${ join.on } = ${ join.table }.${ join.tableWhere }`;
     }
-    const query = `SELECT * FROM ${ table } ${ joinQuery } WHERE ?`;
-    connection.query( query, data, ( error, result ) => {
+    connection.query( `SELECT * FROM ${ table } ${ joinQuery } WHERE ?`, data, ( error, result ) => {
         if( error ) {
             return reject( error );
         }
@@ -227,11 +198,11 @@ const remove = ( table, id ) => new Promise( async ( resolve, reject ) => {
     /**
      * Search by ID first.
      */
-     const exists = await getById( table, id );
+     const exists = await get( table, id, 'id' );
      if( ! exists ) {
          return reject({ 
              message: 'The resource which you are trying to remove doesn\'t exists.', 
-             statusCode: 409,
+             statusCode: 404,
          });
      }
      connection.query( `DELETE FROM ${ table } WHERE id = ?`, [ id ], ( error, result ) => {
@@ -247,8 +218,7 @@ const remove = ( table, id ) => new Promise( async ( resolve, reject ) => {
 
 module.exports = {
     list,
-    getById,
-    getByUsername,
+    get,
     upsertUser,
     upsertFollower,
     upsertPost,
