@@ -22,10 +22,8 @@ class createRemoteDB {
      * @param {*} id 
      * @returns 
      */
-    get = ( table, id ) => this.pathReq( 'GET', table, id );
-    getById = ( table, id ) => this.pathReq( 'GET', table, id );
-    getByUsername = ( table, username ) => this.pathReq( 'GET', table, username );
-    
+    get = ( table, id, criteria ) => this.getCriteriaReq( 'GET', table, id, criteria );
+
     /**
      * Upsert Method
      * @param {*} table 
@@ -100,6 +98,24 @@ class createRemoteDB {
         });
     };
 
+    getCriteriaReq = ( method, table, id, criteria ) => {
+
+        let url = `/${ table }/${ id }/${ criteria }`;
+        return new Promise( async ( resolve, reject ) => {
+            try {
+                const request = await this.axiosInstance.request({ method, url, id });
+                const { data: { body } } = request;
+                return resolve( body );
+            } catch (error) {
+                console.error( '[REMOTE DB]:', error );
+                return reject({
+                    message: error.response.data.body,
+                    statusCode: error.response.data.status,
+                });            
+            }
+        });
+    };    
+
     defaultReq = ( method, table, data ) => {
 
         let url = `/${ table }`;
@@ -145,7 +161,7 @@ class createRemoteDB {
                 const { data: { body } } = request;
                 return resolve( body );
             } catch (error) {
-                console.error( '[REMOTE DB]:', error );
+                console.error( '[REMOTE DB]:', error.response );
                 return reject({
                     message: error.response.data.body,
                     statusCode: error.response.data.status,
