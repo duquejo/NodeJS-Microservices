@@ -57,7 +57,7 @@ const getById = ( table, id ) => new Promise( ( resolve, reject ) => {
         if ( error ) {
             return reject( error );
         }
-        resolve( data );  
+        resolve( data[0] );  
     });
 });
 
@@ -82,7 +82,7 @@ const getByTitle = ( table, title ) => new Promise( ( resolve, reject ) =>
         if ( error ) {
             return reject( error );
         }
-        resolve( data );  
+        resolve( data[0] );
     })
 );
 
@@ -94,7 +94,7 @@ const getByUserTo = ( table, user_to ) => new Promise( ( resolve, reject ) =>
         if ( error ) {
             return reject( error );
         }
-        resolve( data );  
+        resolve( data[0] );  
     })
 );
 
@@ -104,7 +104,7 @@ const getByUserTo = ( table, user_to ) => new Promise( ( resolve, reject ) =>
  */
 const upsertUser = ( table, data ) => new Promise( async ( resolve, reject ) => {
     const exists = await getByUsername( table, data.username );
-    if( exists.length > 0 ) {
+    if( exists ) {
         return reject({ 
             message: 'This user already exists.', 
             statusCode: 409,
@@ -126,7 +126,7 @@ const upsertUser = ( table, data ) => new Promise( async ( resolve, reject ) => 
  */
 const upsertPost = ( table, data ) => new Promise( async ( resolve, reject ) => {
     const exists = await getByTitle( table, data.title );
-    if( exists.length > 0 ) {
+    if( exists ) {
         return reject({ 
             message: 'This title actually exists, try another.', 
             statusCode: 409,
@@ -156,7 +156,7 @@ const upsertFollower = ( table, data ) => new Promise( async ( resolve, reject )
     }
 
     const exists = await getById( USER_TABLE, data.user_to );
-    if( exists.length === 0 ) {
+    if( ! exists ) {
         return reject({ 
             message: 'Inexistent user to follow, try again.', 
             statusCode: 404,
@@ -164,7 +164,7 @@ const upsertFollower = ( table, data ) => new Promise( async ( resolve, reject )
     }
 
     const isVinculated = await getByUserTo( table, data.user_to );
-    if( isVinculated.length > 0 ) {
+    if( isVinculated ) {
         return reject({ 
             message: 'This new follower is actually vinculated to user', 
             statusCode: 409,
@@ -189,7 +189,7 @@ const update = ( table, id, data ) => new Promise( async ( resolve, reject ) => 
      * Search by id first.
      */
      const exists = await getById( table, id );
-     if( ! exists.length ) {
+     if( ! exists ) {
         return reject({ 
             message: 'The resource doesn\'t exists', 
             statusCode: 404,
@@ -228,7 +228,7 @@ const remove = ( table, id ) => new Promise( async ( resolve, reject ) => {
      * Search by ID first.
      */
      const exists = await getById( table, id );
-     if( exists.length == 0 ) {
+     if( ! exists ) {
          return reject({ 
              message: 'The resource which you are trying to remove doesn\'t exists.', 
              statusCode: 409,
@@ -256,48 +256,3 @@ module.exports = {
     query,
     remove
 };
-
-
-
-
-// const upsert = ( table, data ) => new Promise( async ( resolve, reject ) => {
-
-//     /**
-//      * Search by username/title first.
-//      */
-//     let criteria;
-//     if( [ 'auth', 'user' ].includes( table ) ) {
-//         criteria = {
-//             username: data.username
-//         };
-//     } else if( table === 'post' ) {
-//         criteria = {
-//             title: data.title
-//         };
-//     } else if( table === 'user_follow' ) {
-//         criteria = {
-//             user_to: data.user_to
-//         };
-//     }
-
-//     // console.log( 'mysql upsert', { table, data, criteria });
-
-//     const exists = await get( table, criteria );
-//     if( exists.length > 0 ) {
-//         return reject({ 
-//             message: 'The resource which you are trying to insert already exists.', 
-//             statusCode: 409,
-//         });
-//     }
-
-//     const query = `INSERT INTO ${ table } SET ?`;
-//     connection.query( query, data, ( error, result ) => {
-//         if ( error ) {
-//             return reject( error );
-//         }
-//         resolve({
-//             message: result,
-//             statusCode: 201
-//         });
-//     });
-// });

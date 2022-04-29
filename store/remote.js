@@ -22,7 +22,9 @@ class createRemoteDB {
      * @param {*} id 
      * @returns 
      */
-    get = ( table, criteria ) => this.pathReq( 'GET', table, criteria );
+    get = ( table, id ) => this.pathReq( 'GET', table, id );
+    getById = ( table, id ) => this.pathReq( 'GET', table, id );
+    getByUsername = ( table, username ) => this.pathReq( 'GET', table, username );
     
     /**
      * Upsert Method
@@ -31,6 +33,9 @@ class createRemoteDB {
      * @returns 
      */
     upsert = ( table, data ) => this.defaultReq( 'POST', table, data );
+    upsertUser = ( table, user ) => this.defaultReq( 'POST', table, user );
+    upsertPost = ( table, post ) => this.defaultReq( 'POST', table, post );
+    upsertFollower = ( table, user ) => this.addFollowerReq( 'POST', table, user );
     
     /**
      * Remove Method
@@ -38,7 +43,7 @@ class createRemoteDB {
      * @param {*} query 
      * @param {*} join 
      */
-    remove = ( table, id ) => this.pathReq( 'DELETE', table, { id } );
+    remove = ( table, id ) => this.pathReq( 'DELETE', table, id );
 
     /**
      * Update Method
@@ -47,7 +52,7 @@ class createRemoteDB {
      * @param {*} data 
      * @returns 
      */
-    update = ( table, data ) => this.pathReq( 'PUT', table, data );
+    update = ( table, id, user ) => this.updateReq( 'PUT', table, id, user );
 
     /**
      * Query Method
@@ -56,35 +61,12 @@ class createRemoteDB {
      * @param {*} data 
      * @returns 
      */
-    query = ( table, data ) => this.defaultReq( 'GET', table, data );
+    query = ( table, query, join ) => this.getFollowersReq( 'GET', table, query, join );
     
-    pathReq = ( method, table, data ) => {
 
-        let url = `/${ table }/${ data.id }`;
+    updateReq = ( method, table, id, data ) => {
 
-        console.log( 'PATH REQ', { method, table, data, url } );
-        
-        return new Promise( async ( resolve, reject ) => {
-            try {
-                const request = await this.axiosInstance.request({ method, url, data });
-                const { data: { body } } = request;
-                return resolve( body );
-            } catch (error) {
-                // console.error( '[REMOTE DB]:', error );
-                return reject({
-                    message: error.response.data.body,
-                    statusCode: error.response.data.status,
-                });            
-            }
-        });
-    };
-
-    defaultReq = ( method, table, data ) => {
-
-        let url = `/${ table }`;
-
-        console.log( 'DEFAULT REQ', { method, table, data, url } );
-        
+        let url = `/${ table }/${ id }`;
         return new Promise( async ( resolve, reject ) => {
             try {
                 const request = await this.axiosInstance.request({ method, url, data });
@@ -98,49 +80,79 @@ class createRemoteDB {
                 });            
             }
         });
-    };    
+    };  
 
+    pathReq = ( method, table, id ) => {
 
-    // query = ( table, query, join ) => this.req( 'DELETE', table, );    
+        let url = `/${ table }/${ id }`;
+        return new Promise( async ( resolve, reject ) => {
+            try {
+                const request = await this.axiosInstance.request({ method, url, id });
+                const { data: { body } } = request;
+                return resolve( body );
+            } catch (error) {
+                console.error( '[REMOTE DB]:', error );
+                return reject({
+                    message: error.response.data.body,
+                    statusCode: error.response.data.status,
+                });            
+            }
+        });
+    };
+
+    defaultReq = ( method, table, data ) => {
+
+        let url = `/${ table }`;
+        return new Promise( async ( resolve, reject ) => {
+            try {
+                const request = await this.axiosInstance.request({ method, url, data });
+                const { data: { body } } = request;
+                return resolve( body );
+            } catch (error) {
+                console.error( '[REMOTE DB]:', error );
+                return reject({
+                    message: error.response.data.body,
+                    statusCode: error.response.data.status,
+                });            
+            }
+        });
+    };  
+    
+    addFollowerReq = ( method, table, data ) => {
+
+        let url = `/${ table }/follow/${ data.user_to }`;
+        return new Promise( async ( resolve, reject ) => {
+            try {
+                const request = await this.axiosInstance.request({ method, url, data });
+                const { data: { body } } = request;
+                return resolve( body );
+            } catch (error) {
+                console.error( '[REMOTE DB]:', error );
+                return reject({
+                    message: error.response.data.body,
+                    statusCode: error.response.data.status,
+                });            
+            }
+        });
+    };
+
+    getFollowersReq = ( method, table, query, join ) => {
+
+        let url = `/${ table }/${ query.user_from }/followers`;
+        return new Promise( async ( resolve, reject ) => {
+            try {
+                const request = await this.axiosInstance.request({ method, url, data: { query, join } });
+                const { data: { body } } = request;
+                return resolve( body );
+            } catch (error) {
+                console.error( '[REMOTE DB]:', error );
+                return reject({
+                    message: error.response.data.body,
+                    statusCode: error.response.data.status,
+                });            
+            }
+        });
+    };
 }
-
-/**
- * @TODO MEJORAR Y COMPLEMENTAR
- */
-
-// const createRemoteDB = ( host, port ) => {
-//     const URL = `http://${ host }:${ port }`;
-
-//     const list = ( table ) => {
-//         return req('GET', table);
-//     };
-
-//     const req = ( method, table, data ) => {
-//         let url = `${URL}/${ table }`;
-//         let body = '';
-//         return new Promise( ( resolve, reject ) => {
-//             request({
-//                 method,
-//                 headers: {
-//                     'content-type': 'application/json'
-//                 },
-//                 url,
-//                 body
-//             }, ( err, req, body ) => {
-//                 if( err ) {
-//                     console.error( '[REMOTE DB]: Error', err );
-//                     return reject( err.message );
-//                 }
-
-//                 const response = JSON.parse( body );
-//                 return resolve( response.body );
-//             });
-//         });
-//     };
-
-//     // const get = ( table, id ) => {};
-//     // const upsert = ( table, data ) => {};
-//     // const query = ( table, query, join ) => {};
-// };
 
 module.exports = createRemoteDB;

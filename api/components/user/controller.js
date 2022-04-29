@@ -97,8 +97,3 @@ module.exports = ( injectedStore ) => {
         },
     };
 };
-
-
-/**
- * @TODO Continuar implementación a remoteMySQL
- */

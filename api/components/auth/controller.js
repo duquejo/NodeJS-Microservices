@@ -16,7 +16,6 @@ module.exports = ( injectedStore ) => {
         login: async ( username, password ) => {
             // Search user by username
             const data = await store.getByUsername( AUTH_TABLE, username );
-            
             if( ! data ) {
                 throw error( 'Unable to login, try again with a valid credentials', 403 );
             }
