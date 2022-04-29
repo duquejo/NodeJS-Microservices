@@ -14,15 +14,13 @@ module.exports = ( injectedStore ) => {
     
     return {
         login: async ( username, password ) => {
-
             // Search user by username
-            const data = await store.query( AUTH_TABLE, { username });
-            
+            const data = await store.getByUsername( AUTH_TABLE, username );
             if( ! data ) {
                 throw error( 'Unable to login, try again with a valid credentials', 403 );
             }
 
-            const isValid = await bcrypt.compare( password, data?.password );
+            const isValid = await bcrypt.compare( password, data.password );
 
             if( ! isValid ) {
                 throw error( 'Invalid data', 401 );
@@ -33,28 +31,29 @@ module.exports = ( injectedStore ) => {
         upsert: async ( data ) => {
 
             // Copy user data.
-            const authData = { id: data.id };
+            const user = { id: data.id };
 
             if ( data.username ) {
-                authData.username = data.username;
+                user.username = data.username;
             }
             if ( data.password ) {
-                authData.password = await bcrypt.hash( data.password, 5 );
+                user.password = await bcrypt.hash( data.password, 5 );
             }
-            return store.upsert( AUTH_TABLE, authData );
+            return store.upsertUser( AUTH_TABLE, user );
         },
         update: async ( data ) => {
-
             // Copy user data.
-            const authData = { id: data.id };
-
+            const user = { id: data.id };
             if ( data.username ) {
-                authData.username = data.username;
+                user.username = data.username;
             }
             if ( data.password ) {
-                authData.password = await bcrypt.hash( data.password, 5 );
+                user.password = await bcrypt.hash( data.password, 5 );
             }
-            return store.update( AUTH_TABLE, authData.id, authData );
-        }
+            return store.update( AUTH_TABLE, user.id, user );
+        },
+        remove: async ( id ) => {
+            return store.remove( AUTH_TABLE, id );
+        },
     }
 };

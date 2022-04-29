@@ -45,4 +45,4 @@ app.use('/api/doc', swaggerUI.serve, swaggerUI.setup( swaggerDocument, options )
  */
 app.listen( config.api.port, () => {
     console.log( `Listening on port ${ config.api.port }` );
-} );
+});

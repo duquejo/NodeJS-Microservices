@@ -1,6 +1,8 @@
 const mysql = require('mysql2');
 const config = require('../config');
 
+const USER_TABLE = 'user';
+
 const dbConf = {
     host: config.mysql.host,
     user: config.mysql.user,
@@ -37,65 +39,138 @@ handleConnection();
 /**
  * List
  */
-const list = ( table ) => new Promise( ( resolve, reject ) => {
-    const query = `SELECT * FROM ${ table }`;
-    connection.query( query, ( error, data ) => {
+const list = ( table ) => new Promise( ( resolve, reject ) => 
+    connection.query( `SELECT * FROM ${ table }`, ( error, data ) => {
         if ( error ) {
             return reject( error );
         }
         resolve( data );  
-    });
-});
+    })
+);
 
 /**
- * Get
+ * Get by ID
  */
-const get = ( table, data ) => new Promise( ( resolve, reject ) => {
-
-    let criteria, key;
-
-    switch( table ) {
-        case 'auth':
-            criteria = data.username;
-            key = 'username';
-            break;
-        case 'user_follow':
-            criteria = data.user_to;
-            key = 'user_to';
-            break;
-        default:
-            criteria = data.id;
-            key = 'id';
-            break;
-    }
-
-    const query = `SELECT * FROM ${ table } WHERE ${ key } = '${ criteria }'`;
-    connection.query( query, criteria, ( error, data ) => {
+const getById = ( table, id ) => new Promise( ( resolve, reject ) => {
+    const query = `SELECT * FROM ${ table } WHERE id = '${id }'`;
+    connection.query( query, id, ( error, data ) => {
         if ( error ) {
             return reject( error );
         }
-        resolve( data );  
+        resolve( data[0] );  
     });
 });
 
 /**
- * Upsert
+ * Get by Username
  */
-const upsert = ( table, data ) => new Promise( async ( resolve, reject ) => {
+const getByUsername = ( table, username ) => new Promise( ( resolve, reject ) => {
+    const query = `SELECT * FROM ${ table } WHERE username = '${ username }'`;
+    connection.query( query, username, ( error, data ) => {
+        if ( error ) {
+            return reject( error );
+        }
+        resolve( data[0] );  
+    });
+});
 
-    /**
-     * Search by username first.
-     */
-    const exists = await get( table, data );
-    if( exists.length ) {
+/**
+ * Get by Title
+ */
+const getByTitle = ( table, title ) => new Promise( ( resolve, reject ) =>
+    connection.query( `SELECT * FROM ${ table } WHERE title = '${title }'`, title, ( error, data ) => {
+        if ( error ) {
+            return reject( error );
+        }
+        resolve( data[0] );
+    })
+);
+
+/**
+ * Get by user_to
+ */
+const getByUserTo = ( table, user_to ) => new Promise( ( resolve, reject ) =>
+    connection.query( `SELECT * FROM ${ table } WHERE user_to = '${user_to }'`, user_to, ( error, data ) => {
+        if ( error ) {
+            return reject( error );
+        }
+        resolve( data[0] );  
+    })
+);
+
+
+/**
+ * Upsert User/Auth
+ */
+const upsertUser = ( table, data ) => new Promise( async ( resolve, reject ) => {
+    const exists = await getByUsername( table, data.username );
+    if( exists ) {
         return reject({ 
-            message: 'The resource which you are trying to insert already exists.', 
+            message: 'This user already exists.', 
+            statusCode: 409,
+        });
+    }
+    connection.query( `INSERT INTO ${ table } SET ?`, data, ( error, result ) => {
+        if ( error ) {
+            return reject( error );
+        }
+        resolve({
+            message: result,
+            statusCode: 201
+        });
+    });
+});
+
+/**
+ * Upsert Post
+ */
+const upsertPost = ( table, data ) => new Promise( async ( resolve, reject ) => {
+    const exists = await getByTitle( table, data.title );
+    if( exists ) {
+        return reject({ 
+            message: 'This title actually exists, try another.', 
+            statusCode: 409,
+        });
+    }
+    connection.query( `INSERT INTO ${ table } SET ?`, data, ( error, result ) => {
+        if ( error ) {
+            return reject( error );
+        }
+        resolve({
+            message: result,
+            statusCode: 201
+        });
+    });
+});
+
+/**
+ * Upsert Follower
+ */
+const upsertFollower = ( table, data ) => new Promise( async ( resolve, reject ) => {
+
+    if( data.user_from === data.user_to ) {
+        return reject({
+            message: 'You cannot follow yourself, try again.',
             statusCode: 409,
         });
     }
 
-    const query = `INSERT INTO ${ table } SET ?`;
-    connection.query( query, data, ( error, result ) => {
+    const exists = await getById( USER_TABLE, data.user_to );
+    if( ! exists ) {
+        return reject({ 
+            message: 'Inexistent user to follow, try again.', 
+            statusCode: 404,
+        });        
+    }
+
+    const isVinculated = await getByUserTo( table, data.user_to );
+    if( isVinculated ) {
+        return reject({ 
+            message: 'This new follower is actually vinculated to user', 
+            statusCode: 409,
+        });
+    }
+    connection.query( `INSERT INTO ${ table } SET ?`, data, ( error, result ) => {
         if ( error ) {
             return reject( error );
         }
@@ -109,27 +184,18 @@ const upsert = ( table, data ) => new Promise( async ( resolve, reject ) => {
 /**
  * Update
  */
- const update = ( table, id, data ) => new Promise( async ( resolve, reject ) => {
-
+const update = ( table, id, data ) => new Promise( async ( resolve, reject ) => {
     /**
      * Search by id first.
      */
-     const exists = await get( table, { id, ...data } );
-     if( ! exists.length ) {
+     const exists = await getById( table, id );
+     if( ! exists ) {
         return reject({ 
             message: 'The resource doesn\'t exists', 
             statusCode: 404,
         });
     }
-
-    let rest = data;
-    if( table === 'user' ) {
-        const { password, ...temp } = data;
-        rest = temp;
-    }
-
-    const query = `UPDATE ${ table } SET ? WHERE id = ?`;
-    connection.query( query, [ rest, id ], ( error, result ) => {
+    connection.query( `UPDATE ${ table } SET ? WHERE id = ?`, [ data, id ], ( error, result ) => {
         if ( error ) {
             return reject( error );
         }
@@ -141,12 +207,10 @@ const upsert = ( table, data ) => new Promise( async ( resolve, reject ) => {
  * Query
  */
 const query = ( table, data, join ) => new Promise( async ( resolve, reject ) => {
-
     let joinQuery = '';
     if( join ) {
         joinQuery = `JOIN ${ join.table } ON ${ table }.${ join.on } = ${ join.table }.${ join.tableWhere }`;
     }
-    
     const query = `SELECT * FROM ${ table } ${ joinQuery } WHERE ?`;
     connection.query( query, data, ( error, result ) => {
         if( error ) {
@@ -160,26 +224,20 @@ const query = ( table, data, join ) => new Promise( async ( resolve, reject ) =>
  * Remove
  */
 const remove = ( table, id ) => new Promise( async ( resolve, reject ) => {
-
     /**
      * Search by ID first.
      */
-     const exists = await get( table, { id } );
-     if( exists.length == 0 ) {
+     const exists = await getById( table, id );
+     if( ! exists ) {
          return reject({ 
              message: 'The resource which you are trying to remove doesn\'t exists.', 
              statusCode: 409,
          });
      }
-
-     
-     const query = `DELETE FROM ${ table } WHERE id = ?`;
-     console.log( {table, id, exists, query} );
-     connection.query( query, [ id ], ( error, result ) => {
+     connection.query( `DELETE FROM ${ table } WHERE id = ?`, [ id ], ( error, result ) => {
          if ( error ) {
              return reject( error );
          }
-         console.log( error, result );
          resolve({
              message: result,
              statusCode: 200
@@ -189,8 +247,11 @@ const remove = ( table, id ) => new Promise( async ( resolve, reject ) => {
 
 module.exports = {
     list,
-    get,
-    upsert,
+    getById,
+    getByUsername,
+    upsertUser,
+    upsertFollower,
+    upsertPost,
     update,
     query,
     remove

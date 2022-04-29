@@ -16,3 +16,9 @@ services:
       - ./data/mysql:/var/lib/mysql
     ports:
       - '3306:3306'
+  cache:
+    image: redis:6.2-alpine
+    restart: always
+    command: redis-server --save 20 1 --loglevel warning --requirepass MDNcVb924a
+    ports:
+      - '6379:6379'
