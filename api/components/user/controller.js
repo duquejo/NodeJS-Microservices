@@ -89,7 +89,7 @@ module.exports = ( injectedStore ) => {
         followers: ( id ) => {
             const join = {
                 table: USER_TABLE,
-                on: 'user_to',
+                on: 'user_from',
                 tableWhere: 'id' 
             };
             const query = { user_from: id };

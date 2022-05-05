@@ -101,7 +101,7 @@ const remove = async ( req, res, next ) => {
  * Routes
  */
 router.post('/:table/follow/:id', upsert );
-router.get('/:table/:id/followers', query );
+router.get('/:table/:user_to/followers', query );
 
 router.get('/:table/:id/:criteria', get );
 
