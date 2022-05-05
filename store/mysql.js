@@ -183,10 +183,13 @@ const query = ( table, data, join ) => new Promise( async ( resolve, reject ) =>
     if( join ) {
         joinQuery = `JOIN ${ join.table } ON ${ table }.${ join.on } = ${ join.table }.${ join.tableWhere }`;
     }
-    connection.query( `SELECT * FROM ${ table } ${ joinQuery } WHERE ?`, data, ( error, result ) => {
+    const query = `SELECT * FROM ${ table } ${ joinQuery } WHERE ?`;
+    console.log( query );
+    connection.query( query, data, ( error, result ) => {
         if( error ) {
             return reject( error );
         }
+        console.log( result );
         resolve( ( join ? result : result[0] ) || null );
     });
 });

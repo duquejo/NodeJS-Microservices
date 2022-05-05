@@ -154,7 +154,7 @@ class createRemoteDB {
 
     getFollowersReq = ( method, table, query, join ) => {
 
-        let url = `/${ table }/${ query.user_from }/followers`;
+        let url = `/${ table }/${ query.user_to }/followers`;
         return new Promise( async ( resolve, reject ) => {
             try {
                 const request = await this.axiosInstance.request({ method, url, data: { query, join } });
