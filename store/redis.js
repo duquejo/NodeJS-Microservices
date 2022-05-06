@@ -17,15 +17,39 @@ const list = ( table ) => new Promise( async ( resolve, reject ) => {
         
         let res = data || null;
         if( data ) {
-            res = JSON.stringify( data );
+            res = JSON.parse( data );
+        } else {
+            console.log(`[NOT-CACHED ${ table.toUpperCase() } REQUEST]: searching on DB.`);
         }
         resolve(res);
-    } );
+    });
 });
 
-const get = ( table, id ) => {
+const get = ( table, search, criteria ) => new Promise( async ( resolve, reject ) => {
+    const validCriteria = ['username', 'id', 'title', 'user_to'];
 
-};
+    if( ! validCriteria.includes( criteria ) ) {
+        return reject({ 
+            message: 'Not valid process, try again.', 
+            statusCode: 400,
+        });
+    }
+
+    await client.get( table, ( error, data ) => {
+        if( error ) return reject( error );
+        
+        let res = data || null;
+        if( data ) {
+            res = JSON.parse( data );
+            if( res?.length > 0 ) {
+                res = res.find( element => element[criteria] === search );
+            }
+        } else {
+            console.log(`[NOT-CACHED ${ table.toUpperCase() } REQUEST]: searching on DB.`);
+        }
+        resolve(res);
+    });
+});
 
 const upsert = async ( table, data ) => {
     let key = table;

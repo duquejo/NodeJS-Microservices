@@ -2,17 +2,33 @@ const nanoId = require('nanoid');
 
 const POST_TABLE = 'post';
 
-module.exports = ( injectedStore ) => {
+module.exports = ( injectedStore, injectedCache ) => {
 
+    let cache = injectedCache;
     let store = injectedStore;
 
     if( ! store ) {
         store = require('../../../store/dummy');
     }
 
+    if( ! cache ) {
+        cache = require('../../../store/dummy');
+    }
+
     return {
-        list: () => {
-            return store.list( POST_TABLE );
+        list: async () => {
+            /**
+             * 
+             * Cache Strategy
+             */
+            let posts = await cache.list( POST_TABLE );
+
+            if( ! posts ) {
+                posts = await store.list( POST_TABLE );
+                cache.upsert( POST_TABLE, posts );
+            }
+ 
+            return posts;
         },
         get: ( id ) => {
             return store.get( POST_TABLE, id, 'id' );
