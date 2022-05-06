@@ -1,6 +1,6 @@
 # NodeJS-Microservices Miniproject
 
-## Node JS Microservices Blog example with Users, Posts, Auth, JWT and HTTP Requests, MySQL DB Persistency and Swagger support.
+### Node JS Microservices Blog example with Users, Posts, Auth, JWT and HTTP Requests, MySQL DB Persistency and Swagger support.
 
 [![made-with-javascript](https://img.shields.io/badge/Built_with-JavaScript-1f425f.svg)](https://www.javascript.com)
 [![made-with-nodejs](https://img.shields.io/badge/Made_with-Node_JS-green.svg)](https://nodejs.org/es/)
