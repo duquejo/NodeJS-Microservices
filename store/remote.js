@@ -107,7 +107,7 @@ class createRemoteDB {
                 const { data: { body } } = request;
                 return resolve( body );
             } catch (error) {
-                console.error( '[REMOTE DB]:', error );
+                // console.error( '[REMOTE DB]:', error );
                 return reject({
                     message: error.response.data.body,
                     statusCode: error.response.data.status,

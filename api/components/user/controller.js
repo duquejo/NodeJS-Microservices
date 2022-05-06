@@ -4,20 +4,47 @@ const auth = require('../auth');
 
 const USER_TABLE = 'user';
 
-module.exports = ( injectedStore ) => {
+module.exports = ( injectedStore, injectedCache ) => {
 
+    let cache = injectedCache;
     let store = injectedStore;
 
     if( ! store ) {
         store = require('../../../store/dummy');
     }
 
+    if( ! cache ) {
+        cache = require('../../../store/dummy');
+    }
+
     return {
-        list: () => {
-            return store.list( USER_TABLE );
+        list: async () => {
+            /**
+             * 
+             * Cache Strategy
+             */
+            let users = await cache.list( USER_TABLE );
+
+            if( ! users ) {
+                users = await store.list( USER_TABLE );
+                cache.upsert( USER_TABLE, users );
+            }
+
+            return users;
         },
-        get: ( id ) => {
-            return store.get( USER_TABLE, id, 'id' );
+        get: async ( id ) => {
+
+            /**
+             * Cache GET Strategy
+             */
+            let user = await cache.get( USER_TABLE, id, 'id' );
+            if( ! user ) {
+                user = store.get( USER_TABLE, id, 'id' );
+                const users = await store.list( USER_TABLE );
+                cache.upsert( USER_TABLE, users );
+            }
+
+            return user;
         },
         upsert: async ( body ) => {
 
